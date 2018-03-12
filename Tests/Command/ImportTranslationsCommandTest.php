@@ -79,7 +79,7 @@ class ImportTranslationsCommandTest extends WebTestCase
      */
     public function testExecute()
     {
-        static::$application->add(new ImportTranslationsCommand());
+        static::$application->add(new ImportTranslationsCommand(self::$kernel->getContainer()->get('translator')));
 
         $command = static::$application->find("lexik:translations:import");
         $command->setContainer(static::$kernel->getContainer());
@@ -98,7 +98,7 @@ class ImportTranslationsCommandTest extends WebTestCase
         $resultLines = explode("\n", $commandTester->getDisplay());
 
         $this->assertEquals('# LexikTranslationBundle:', $resultLines[0]);
-        $this->assertRegExp('/Using dir (.)+(lexik\/translation-bundle|lexik\/LexikTranslationBundle)\/Resources\/translations to lookup translation files/', $resultLines[1]);
+        $this->assertRegExp('/Using dir (.)+\/Resources\/translations to lookup translation files/', $resultLines[1]);
         $this->assertRegExp('/translations\/LexikTranslationBundle\.((fr)|(en))\.yml" \.\.\. 30 translations/', $resultLines[2]);
         $this->assertRegExp('/translations\/LexikTranslationBundle\.((fr)|(en))\.yml" \.\.\. 30 translations/', $resultLines[3]);
         $this->assertEquals('Removing translations cache files ...', $resultLines[4]);

@@ -182,6 +182,7 @@ class TransUnitRepositoryTest extends BaseUnitTestCase
      */
     public function testGetTranslationsForFile()
     {
+        $this->markTestIncomplete('https://github.com/propelorm/Propel2/issues/1447');
         $con = $this->loadDatabase();
         $repository = new TransUnitRepository($con);
 

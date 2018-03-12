@@ -76,7 +76,16 @@ class LexikTranslationExtension extends Extension
         $translator = new Definition();
         $translator->setClass('%lexik_translation.translator.class%');
 
-        if (Kernel::VERSION_ID >= 30300) {
+        if (Kernel::VERSION_ID >= 40000) {
+            $arguments = [
+                new Reference('service_container'), // Will be replaced by service locator
+                new Reference('translator.formatter.default'),
+                new Parameter('kernel.default_locale'),
+                [], // translation loaders
+                new Parameter('lexik_translation.translator.options')
+            ];
+            $translator->setPublic(true);
+        } elseif (Kernel::VERSION_ID >= 30300) {
             $arguments = [
                 new Reference('service_container'), // Will be replaced by service locator
                 new Reference('translator.selector'),
@@ -171,7 +180,7 @@ class LexikTranslationExtension extends Extension
         );
 
         $storageDefinition = new Definition();
-        $storageDefinition->setClass(new Parameter(sprintf('lexik_translation.%s.translation_storage.class', $storage)));
+        $storageDefinition->setClass($container->getParameter(sprintf('lexik_translation.%s.translation_storage.class', $storage)));
         $storageDefinition->setArguments($args);
 
         $container->setDefinition('lexik_translation.translation_storage', $storageDefinition);
@@ -206,7 +215,7 @@ class LexikTranslationExtension extends Extension
             ->addMethodCall('setProfiler', array(new Reference('profiler')));
 
         $tokenFinderDefinition = new Definition();
-        $tokenFinderDefinition->setClass(new Parameter('lexik_translation.token_finder.class'));
+        $tokenFinderDefinition->setClass($container->getParameter('lexik_translation.token_finder.class'));
         $tokenFinderDefinition->setArguments(array(
             new Reference('profiler'),
             new Parameter('lexik_translation.token_finder.limit'),
@@ -224,7 +233,11 @@ class LexikTranslationExtension extends Extension
     protected function registerTranslatorConfiguration(array $config, ContainerBuilder $container)
     {
         // use the Lexik translator as default translator service
-        $container->setAlias('translator', 'lexik_translation.translator');
+        $alias = $container->setAlias('translator', 'lexik_translation.translator');
+
+        if (Kernel::VERSION_ID >= 30400) {
+            $alias->setPublic(true);
+        }
 
         $translator = $container->findDefinition('lexik_translation.translator');
         $translator->addMethodCall('setFallbackLocales', array($config['fallback_locale']));
